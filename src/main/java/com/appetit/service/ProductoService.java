@@ -20,4 +20,7 @@ public class ProductoService {
 		return productoRepo.findById(id).orElse(null);
 	}
 
+	public void DeleteProductoById(Long id) {
+		productoRepo.deleteById(id);
+	}
 }

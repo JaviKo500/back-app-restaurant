@@ -15,6 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -38,14 +39,14 @@ public class ProductoRestController {
 	@PostMapping("register/product")
 	public ResponseEntity<?> RegistrarProducto(@RequestBody Producto producto) {
 		Map<String, Object> response = new HashMap<>();
-
+		Producto prod = null;
 		if (producto == null) {
 			response.put("mensaje", "Los datos a registrar son erroneos.");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
 		try {
-			productoService.RegistrarProducto(producto);
+			prod = productoService.RegistrarProducto(producto);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al registar el producto.");
 			response.put("error", e.getMostSpecificCause().getMessage());
@@ -53,6 +54,7 @@ public class ProductoRestController {
 		}
 
 		response.put("mensaje", "Producto guardado correctamente");
+		response.put("id", prod.getId());
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
@@ -139,6 +141,21 @@ public class ProductoRestController {
 		}
 		response.put("producto", producto);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+	}
+
+	@DeleteMapping("delete/product/{id}")
+	public ResponseEntity<?> deleteCategoria(@PathVariable Long id) {
+		Map<String, Object> response = new HashMap<>();
+		Producto delproducto = productoService.BuscarProductoById(id);
+		try {
+			productoService.DeleteProductoById(delproducto.getId());
+		} catch (DataAccessException e) {
+			response.put("error", e.getMostSpecificCause().getMessage());
+			response.put("mensaje", "Error al eliminar el producto");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		response.put("mensaje", "Producto eliminado");
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
 }

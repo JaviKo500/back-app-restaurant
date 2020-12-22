@@ -2,6 +2,7 @@ package com.appetit.RestController;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,11 +12,15 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.dao.DataAccessException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -58,7 +63,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@PostMapping("register/categoria")
+	@PostMapping("register/category")
 	public ResponseEntity<?> RegistarCategoria(@RequestBody Categoria categoria) {
 		Map<String, Object> response = new HashMap<>();
 		if (categoria == null || categoria.getNombre().length() < 2) {
@@ -77,10 +82,11 @@ public class CategoriaRestController {
 		}
 
 		response.put("mensaje", "Categoria " + categoria.getNombre() + " registrada correctamente.");
+		response.put("id", categoria.getId());
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@PutMapping("update/categoria/{id}")
+	@PutMapping("update/category/{id}")
 	public ResponseEntity<?> ActualizarCategoria(@RequestBody Categoria categoria, @PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
 		Categoria catExistente = null;
@@ -107,6 +113,7 @@ public class CategoriaRestController {
 		}
 
 		response.put("mensaje", "Categoria " + categoria.getNombre() + " actualizáda correctamente.");
+		response.put("id", categoria.getId());
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
@@ -165,6 +172,45 @@ public class CategoriaRestController {
 		}
 		response.put("categoria", categoria);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+	}
+
+	@GetMapping("category/img/{nombreImg:.+}") // :.+ es una expresion reguar de que es un archivo
+	public ResponseEntity<Resource> GetimagenProd(@PathVariable String nombreImg) {
+
+		Path rutaArchivo = Paths.get(RutaImagenes.RUTA_CATEGORIAS).resolve(nombreImg).toAbsolutePath();
+		Resource recurso = null;
+		try {
+			recurso = new UrlResource(rutaArchivo.toUri());
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		if (!recurso.exists() && recurso.isReadable()) {
+			throw new RuntimeException("No se pudo cargar la imagen de la ruta solicitada");
+		}
+
+		// forzar la descarga de la imagen
+		HttpHeaders cabecera = new HttpHeaders();
+		cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attaachment; filename=\"" + recurso.getFilename() + "\"");
+
+		return new ResponseEntity<Resource>(recurso, cabecera, HttpStatus.OK);
+
+	}
+
+	@DeleteMapping("delete/category/{id}")
+	public ResponseEntity<?> deleteCategoria(@PathVariable Long id) {
+		Map<String, Object> response = new HashMap<>();
+		Categoria delCategoria = categoriaService.BuscarCategoriaById(id);
+		try {
+			categoriaService.deleteCategoriabyId(delCategoria.getId());
+		} catch (DataAccessException e) {
+			response.put("error", e.getMostSpecificCause().getMessage());
+			response.put("mensaje", "Error al eliminar el producto");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		response.put("mensaje", "Producto eliminado");
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
 }
