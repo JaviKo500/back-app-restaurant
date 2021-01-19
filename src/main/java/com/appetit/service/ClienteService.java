@@ -20,4 +20,12 @@ public class ClienteService {
 		return clienteRepo.findByCedula(cedula);
 	}
 
+	public Cliente findClienteByID(Long id) {
+		return clienteRepo.findById(id).orElse(null);
+	}
+
+	public void deleteClienteByID(Long id) {
+		clienteRepo.deleteById(id);
+	}
+
 }

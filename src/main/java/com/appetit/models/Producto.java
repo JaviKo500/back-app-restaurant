@@ -28,7 +28,7 @@ public class Producto implements Serializable {
 
 	private String imagen;
 
-	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+	@JsonIgnoreProperties(value={"producto", "hibernateLazyInitializer", "handler"}, allowSetters=true)
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Categoria categoria;
 

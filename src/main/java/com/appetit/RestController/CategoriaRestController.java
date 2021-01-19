@@ -137,13 +137,12 @@ public class CategoriaRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 		if (!archivo.isEmpty()) {
-			// uuid genera und id random unico
+			// id genera und id random unico
 			String nombreArchivo = UUID.randomUUID().toString() + "_" + archivo.getOriginalFilename().replace(" ", "");
 			Path rutaArchivo = Paths.get(RutaImagenes.RUTA_CATEGORIAS).resolve(nombreArchivo).toAbsolutePath();// crea
 																												// la
 																												// ruta
-			// con el
-			// nombre
+			// con el nombre
 			try {
 				Files.copy(archivo.getInputStream(), rutaArchivo);
 			} catch (IOException e) {
@@ -201,15 +200,28 @@ public class CategoriaRestController {
 	@DeleteMapping("delete/category/{id}")
 	public ResponseEntity<?> deleteCategoria(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
-		Categoria delCategoria = categoriaService.BuscarCategoriaById(id);
+		Categoria categoria = categoriaService.BuscarCategoriaById(id);
+		String error = "";
 		try {
-			categoriaService.deleteCategoriabyId(delCategoria.getId());
+			categoriaService.deleteCategoriabyId(id);
 		} catch (DataAccessException e) {
 			response.put("error", e.getMostSpecificCause().getMessage());
 			response.put("mensaje", "Error al eliminar el producto");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		response.put("mensaje", "Producto eliminado");
+		try {
+			if (categoria.getImagen() != null && categoria.getImagen().length() > 0) {
+				Path rutaImg = Paths.get(RutaImagenes.RUTA_CATEGORIAS).resolve(categoria.getImagen()).toAbsolutePath();
+				File archivoImg = rutaImg.toFile();
+				if (archivoImg.exists() && archivoImg.canRead()) {
+					archivoImg.delete();
+				}
+			}
+		} catch (Exception e) {
+			error = "Error al eliminar la imagen del producto";
+		}
+		response.put("error", error);
+		response.put("mensaje", "Categoría eliminada");
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 

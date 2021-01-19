@@ -54,6 +54,14 @@ public class Cliente implements Serializable {
 		this.id = id;
 	}
 
+	public Ciudad getCiudad() {
+		return ciudad;
+	}
+
+	public void setCiudad(Ciudad ciudad) {
+		this.ciudad = ciudad;
+	}
+
 	public String getCedula() {
 		return cedula;
 	}
