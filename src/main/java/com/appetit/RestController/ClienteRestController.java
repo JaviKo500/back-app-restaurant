@@ -25,7 +25,7 @@ import com.appetit.service.ClienteService;
 @Controller
 @CrossOrigin("*")
 @RequestMapping("/")
-public class ClienteController {
+public class ClienteRestController {
 
 	@Autowired
 	private ClienteService clienteService;

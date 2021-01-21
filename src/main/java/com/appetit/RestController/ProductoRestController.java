@@ -64,6 +64,29 @@ public class ProductoRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@GetMapping("get/product/{id}")
+	public ResponseEntity<?> ProductoByid(@PathVariable Long id) {
+		Map<String, Object> response = new HashMap<>();
+		Producto prod = null;
+
+		try {
+			prod = productoService.BuscarProductoById(id);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al obtener el producto");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		if (prod == null) {
+			response.put("mensaje", "El producto solicitado no existe");
+			response.put("error", "Id de producto erróneo");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		response.put("mensaje", "producto obtenido");
+		response.put("producto", prod);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
 	@GetMapping("get/products/{page}")
 	public ResponseEntity<?> ListaDeProductosPage(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();

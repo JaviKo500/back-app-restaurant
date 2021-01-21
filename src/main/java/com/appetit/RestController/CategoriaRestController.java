@@ -15,6 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -56,6 +59,24 @@ public class CategoriaRestController {
 		if (categorias.size() == 0) {
 			response.put("mensaje", "No existen categorías en la base de datos");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+		}
+
+		response.put("mensaje", "lista de categorías obtenida");
+		response.put("categorias", categorias);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("get/categories/{page}")
+	public ResponseEntity<?> GetCategoriasPage(@PathVariable Integer page) {
+		Map<String, Object> response = new HashMap<>();
+		Page<Categoria> categorias;
+		try {
+			Pageable pageable = PageRequest.of(page, 10);
+			categorias = categoriaService.AllCategoriesPageable(pageable);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al mapear las categorías");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		response.put("mensaje", "lista de categorías obtenida");
