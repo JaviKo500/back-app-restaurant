@@ -87,6 +87,7 @@ public class CategoriaRestController {
 	@PostMapping("register/category")
 	public ResponseEntity<?> RegistarCategoria(@RequestBody Categoria categoria) {
 		Map<String, Object> response = new HashMap<>();
+		Categoria cat = null;
 		if (categoria == null || categoria.getNombre().length() < 2) {
 			response.put("mensaje", "Los datos a registrar son erroneos.");
 			response.put("error", "Complete los campos obligatorios.");
@@ -94,10 +95,24 @@ public class CategoriaRestController {
 		}
 
 		try {
+			cat = categoriaService.BuscarrCategoriaNombre(categoria.getNombre());
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al registar una nueva categoria.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		if (cat != null) {
+			response.put("mensaje", "Error al registar una nueva categoría.");
+			response.put("error", "Yá existe una categoría con ese nombre.");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		try {
 			categoriaService.RegisterCategoria(categoria);
 		} catch (DataAccessException e) {
 			// capturar los errores posibles para reportar al cliente
-			response.put("mensaje", "Error al registar una nueva categoria.");
+			response.put("mensaje", "Error al registar una nueva categoría.");
 			response.put("error", e.getMostSpecificCause().getMessage());
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -111,11 +126,25 @@ public class CategoriaRestController {
 	public ResponseEntity<?> ActualizarCategoria(@RequestBody Categoria categoria, @PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
 		Categoria catExistente = null;
+		Categoria catNom = null; /// objeto para solicitar categoria por nombre y comprobar si ya existe
 		if (categoria == null) {
 			response.put("mensaje", "Los datos a actualizar son erroneos.");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		try {
+			catNom=categoriaService.BuscarrCategoriaNombre(categoria.getNombre());
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al actualizar la categoría.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
+		if (catNom != null && catNom.getId() != categoria.getId()) {
+			response.put("mensaje", "Error al actualizar la categoría.");
+			response.put("error", "Ya existe una categoría con ese nombre");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_GATEWAY);
+		}
+		
 		catExistente = categoriaService.BuscarCategoriaById(id);
 
 		if (catExistente == null) {

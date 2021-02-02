@@ -23,6 +23,11 @@ public class CategoriaService {
 	}
 
 	@Transactional(readOnly = true)
+	public Categoria BuscarrCategoriaNombre(String nombre) {
+		return categoriaRepo.findByNombre(nombre);
+	}
+
+	@Transactional(readOnly = true)
 	public Page<Categoria> AllCategoriesPageable(Pageable pageable) {
 		return categoriaRepo.findAll(pageable);
 	}

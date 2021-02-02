@@ -6,4 +6,6 @@ import com.appetit.models.Mesa;
 
 public interface IMesaRepo extends JpaRepository<Mesa, Long> {
 
+	public Mesa findByNombre(String nombre);
+
 }

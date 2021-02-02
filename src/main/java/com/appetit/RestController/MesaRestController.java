@@ -39,9 +39,22 @@ public class MesaRestController {
 			response.put("mensaje", "Los datos a registrar son erroneos.");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
+		// buscar si no existe una mesa con el mismo nombre
+		try {
+			mes = mesaService.ObtenerMesaNombre(mesa.getNombre());
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al registar la mesa.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		if (mes != null) {
+			response.put("mensaje", "Error al registar la mesa.");
+			response.put("error", "Yá existe una mesa con ese nombre");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_GATEWAY);
+		}
 		// procso para guardar el producto
 		try {
-			mes = mesaService.RegistrarMesa(mesa);
+			mesaService.RegistrarMesa(mesa);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al registar la mesa.");
 			response.put("error", e.getMostSpecificCause().getMessage());
@@ -49,7 +62,6 @@ public class MesaRestController {
 		}
 
 		response.put("mensaje", "Mesa guardado correctamente");
-		response.put("id", mes.getId());
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
@@ -75,11 +87,25 @@ public class MesaRestController {
 	@PutMapping("update/mesa/{id}")
 	public ResponseEntity<?> UpdateDeMesas(@RequestBody Mesa mesa, @PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
-
+		Mesa mes = null;
 		Mesa mesActual = null;
 		if (mesa == null) {
 			response.put("mensaje", "Los datos a actualizar son erroneos.");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+		}
+
+		// buscar si no existe una mesa con el mismo nombre
+		try {
+			mes = mesaService.ObtenerMesaNombre(mesa.getNombre());
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al registar la mesa.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		if (mes != null && mes.getId() != mesa.getId()) {
+			response.put("mensaje", "Error al actualizar la mesa.");
+			response.put("error", "Ya existe una mesa con ese nombre");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_GATEWAY);
 		}
 
 		mesActual = mesaService.getMesaById(id);

@@ -7,4 +7,6 @@ import com.appetit.models.Categoria;
 @Repository
 public interface ICategoriaRepo extends JpaRepository<Categoria, Long> {
 
+	public Categoria findByNombre(String nombre);
+	
 }

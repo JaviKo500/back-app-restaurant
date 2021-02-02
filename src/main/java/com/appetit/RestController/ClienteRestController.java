@@ -2,9 +2,6 @@ package com.appetit.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -21,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.appetit.models.Cliente;
 import com.appetit.service.ClienteService;
+import com.appetit.service.ValidacionService;
 
 @Controller
 @CrossOrigin("*")
@@ -29,6 +27,8 @@ public class ClienteRestController {
 
 	@Autowired
 	private ClienteService clienteService;
+	@Autowired
+	private ValidacionService validacionService;
 
 	@PostMapping("cliente/register")
 	public ResponseEntity<?> guardarCliente(@RequestBody Cliente cliente) {
@@ -39,13 +39,13 @@ public class ClienteRestController {
 			response.put("mensaje", "Los datos a registrar son erroneos.");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
-		if (cliente.getApellidos().length() < 3 || cliente.getNombres().length() < 3
-				|| cliente.getCelular().length() > 10 || cliente.getDireccion().length() > 3
-				|| cliente.getCedula().length() > 10) {
-			response.put("mensaje", "Completar los campos obligatorios");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 
+		if (validacionService.Email(cliente.getEmail()) == false) {
+			response.put("mensaje", "Error de ingreso, cliente no actualizado.");
+			response.put("error", "El email ingresado es inválido");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
+
 		clie = clienteService.FindClineteByCedula(cliente.getCedula());
 		if (clie != null) {
 			response.put("mensaje",
@@ -69,11 +69,8 @@ public class ClienteRestController {
 	public ResponseEntity<?> ActualizarClienteid(@RequestBody Cliente cliente, @PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
 		Cliente clientRegis = null;
-		Pattern pattern = Pattern.compile(
-				"^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
-		Matcher mather = pattern.matcher(cliente.getEmail());
 
-		if (mather.find() != true) {
+		if (validacionService.Email(cliente.getEmail()) == false) {
 			response.put("mensaje", "Error de ingreso, cliente no actualizado.");
 			response.put("error", "El email ingresado es inválido");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);

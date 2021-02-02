@@ -21,6 +21,11 @@ public class MesaService {
 		return mesaRepo.findAll();
 	}
 
+	@Transactional(readOnly = true)
+	public Mesa ObtenerMesaNombre(String nombre) {
+		return mesaRepo.findByNombre(nombre);
+	}
+
 	@Transactional
 	public Mesa RegistrarMesa(Mesa mesa) {
 		return mesaRepo.save(mesa);

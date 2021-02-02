@@ -9,14 +9,14 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class Mesa implements Serializable {
+public class Role implements Serializable {
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
+
 	@Column(unique = true)
 	private String nombre;
-	private String nombreQr;
-	private Boolean estado;
 
 	public Long getId() {
 		return id;
@@ -24,14 +24,6 @@ public class Mesa implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public String getNombreQr() {
-		return nombreQr;
-	}
-
-	public void setNombreQr(String nombreQr) {
-		this.nombreQr = nombreQr;
 	}
 
 	public String getNombre() {
@@ -42,14 +34,5 @@ public class Mesa implements Serializable {
 		this.nombre = nombre;
 	}
 
-	public Boolean getEstado() {
-		return estado;
-	}
-
-	public void setEstado(Boolean estado) {
-		this.estado = estado;
-	}
-
 	private static final long serialVersionUID = 1L;
-
 }

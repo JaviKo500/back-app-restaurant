@@ -3,6 +3,10 @@ insert into categoria (estado, nombre, imagen) values(true,'prueba cate1', 'jar-
 insert into categoria (estado, nombre, imagen) values(true,'prueba cate 2', 'jar-loading.gif');
 insert into categoria (estado, nombre, imagen) values(true,'prueba cate 3', 'jar-loading.gif');
 
+insert into sexo(tipo)values('Masculino');
+insert into sexo(tipo)values('Femenino');
+insert into sexo(tipo)values('Otro');
+
 insert into mesa (estado, nombre) values (true, 'mesa1');
 insert into mesa (estado, nombre) values (true, 'mesa2');
 insert into mesa (estado, nombre) values (true, 'mesa3');
@@ -17,6 +21,9 @@ insert into mesa (estado, nombre) values (true, 'mesa11');
 insert into mesa (estado, nombre) values (true, 'mesa12');
 insert into mesa (estado, nombre) values (false, 'mesa13');
 insert into mesa (estado, nombre) values (false, 'mesa14');
+
+insert into role (nombre) values ('ROLE_ADMIN');
+insert into role (nombre) values ('ROLE_COCINERO');
 
 insert into producto (descripcion, estado, nombre, precio, categoria_id) values('sn', true, 'papas', 2.20, 1);
 
