@@ -1,12 +1,12 @@
 package com.appetit.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,12 +15,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.appetit.models.Cliente;
 import com.appetit.service.ClienteService;
 import com.appetit.service.ValidacionService;
 
-@Controller
+@RestController
 @CrossOrigin("*")
 @RequestMapping("/")
 public class ClienteRestController {
@@ -30,7 +31,7 @@ public class ClienteRestController {
 	@Autowired
 	private ValidacionService validacionService;
 
-	@PostMapping("cliente/register")
+	@PostMapping("client/register/client")
 	public ResponseEntity<?> guardarCliente(@RequestBody Cliente cliente) {
 		Map<String, Object> response = new HashMap<>();
 		Cliente clie = null;
@@ -38,12 +39,17 @@ public class ClienteRestController {
 		if (cliente == null) {
 			response.put("mensaje", "Los datos a registrar son erroneos.");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
-		}
+		} else {
+			if (cliente.getCedula().length() == 9) {
+				cliente.setCedula("0" + cliente.getCedula());
+			}
 
-		if (validacionService.Email(cliente.getEmail()) == false) {
-			response.put("mensaje", "Error de ingreso, cliente no actualizado.");
-			response.put("error", "El email ingresado es inválido");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+			cliente.setCelular("0" + cliente.getCelular());
+		}
+		List<String> errores = validacionService.camposCliente(cliente);
+		if (errores.size() != 0) {
+			response.put("mensaje", errores);
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CONFLICT);
 		}
 
 		clie = clienteService.FindClineteByCedula(cliente.getCedula());
@@ -53,13 +59,13 @@ public class ClienteRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
 		try {
-			clienteService.RegisterCliente(cliente);
+			clie = clienteService.RegisterCliente(cliente);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al intentar registrar un cliente.");
 			response.put("error", e.getMostSpecificCause().getMessage());
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-
+		response.put("cliente", clie);
 		response.put("mensaje", "Cliente registrado.");
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
@@ -92,11 +98,9 @@ public class ClienteRestController {
 			// pasar los datos nuevos al cliente
 			clientRegis.setApellidos(cliente.getApellidos());
 			clientRegis.setCelular(cliente.getCelular());
-			clientRegis.setCiudad(cliente.getCiudad());
 			clientRegis.setDireccion(cliente.getDireccion());
 			clientRegis.setEmail(cliente.getEmail());
 			clientRegis.setNombres(cliente.getNombres());
-			clientRegis.setTelefono(cliente.getTelefono());
 			clientRegis = clienteService.RegisterCliente(clientRegis);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error, no se actualizó el cliente");

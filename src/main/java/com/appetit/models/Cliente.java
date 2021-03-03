@@ -4,15 +4,11 @@ import java.io.Serializable;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Table(name = "cliente")
 @Entity
@@ -32,8 +28,6 @@ public class Cliente implements Serializable {
 	@NotNull(message = "Los apellidos son un campo obligatorio.")
 	private String apellidos;
 
-	private String telefono;
-
 	private String celular;
 
 	private String direccion;
@@ -42,24 +36,12 @@ public class Cliente implements Serializable {
 	@NotNull(message = "El email es un campo obligatorio.")
 	private String email;
 
-	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-	@ManyToOne(fetch = FetchType.LAZY)
-	private Ciudad ciudad;
-
 	public Long getId() {
 		return id;
 	}
 
 	public void setId(Long id) {
 		this.id = id;
-	}
-
-	public Ciudad getCiudad() {
-		return ciudad;
-	}
-
-	public void setCiudad(Ciudad ciudad) {
-		this.ciudad = ciudad;
 	}
 
 	public String getCedula() {
@@ -84,14 +66,6 @@ public class Cliente implements Serializable {
 
 	public void setApellidos(String apellidos) {
 		this.apellidos = apellidos;
-	}
-
-	public String getTelefono() {
-		return telefono;
-	}
-
-	public void setTelefono(String telefono) {
-		this.telefono = telefono;
 	}
 
 	public String getCelular() {

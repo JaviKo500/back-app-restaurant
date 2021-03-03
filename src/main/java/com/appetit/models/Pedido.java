@@ -22,7 +22,6 @@ public class Pedido implements Serializable {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
-	private Long numero;
 
 	@Temporal(TemporalType.DATE)
 	private Date fecha = new Date();
@@ -31,11 +30,18 @@ public class Pedido implements Serializable {
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	private List<ItemPedido> items;
 
+	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	private List<ItemPedidoCombo> combos;
+
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date hora = new Date();
 
 	private Double total;
-	private Boolean estado;
+
+	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
+	@ManyToOne(fetch = FetchType.LAZY)
+	private Estado estado;
 
 	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -57,12 +63,36 @@ public class Pedido implements Serializable {
 		this.id = id;
 	}
 
-	public Long getNumero() {
-		return numero;
+	public List<ItemPedido> getItems() {
+		return items;
 	}
 
-	public void setNumero(Long numero) {
-		this.numero = numero;
+	public void setItems(List<ItemPedido> items) {
+		this.items = items;
+	}
+
+	public Mesa getMesa() {
+		return mesa;
+	}
+
+	public void setMesa(Mesa mesa) {
+		this.mesa = mesa;
+	}
+
+	public Cliente getCliente() {
+		return cliente;
+	}
+
+	public void setCliente(Cliente cliente) {
+		this.cliente = cliente;
+	}
+
+	public MedioPago getMedioPago() {
+		return medioPago;
+	}
+
+	public void setMedioPago(MedioPago medioPago) {
+		this.medioPago = medioPago;
 	}
 
 	public Date getFecha() {
@@ -89,11 +119,11 @@ public class Pedido implements Serializable {
 		this.total = total;
 	}
 
-	public Boolean getEstado() {
+	public Estado getEstado() {
 		return estado;
 	}
 
-	public void setEstado(Boolean estado) {
+	public void setEstado(Estado estado) {
 		this.estado = estado;
 	}
 

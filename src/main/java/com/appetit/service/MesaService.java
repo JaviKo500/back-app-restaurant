@@ -17,32 +17,35 @@ public class MesaService {
 	IMesaRepo mesaRepo;
 
 	@Transactional(readOnly = true)
-	public List<Mesa> getAllMesas() {
-		return mesaRepo.findAll();
+	public List<Mesa> getAllMesasClienteEstado() {
+		return mesaRepo.findByEstadoAndEliminated(true, false);
 	}
 
 	@Transactional(readOnly = true)
 	public Mesa ObtenerMesaNombre(String nombre) {
-		return mesaRepo.findByNombre(nombre);
+		return mesaRepo.findByNombreAndEliminated(nombre, false);
 	}
 
 	@Transactional
 	public Mesa RegistrarMesa(Mesa mesa) {
+		mesa.setEliminated(false);
 		return mesaRepo.save(mesa);
 	}
 
 	@Transactional(readOnly = true)
 	public Page<Mesa> ObtenerMesaPage(Pageable pageable) {
-		return mesaRepo.findAll(pageable);
+		return mesaRepo.findByEliminated(pageable, false);
 	}
 
 	@Transactional(readOnly = true)
 	public Mesa getMesaById(Long id) {
-		return mesaRepo.findById(id).orElse(null);
+		return mesaRepo.findByIdAndEliminated(id, false);
 	}
 
 	@Transactional
-	public void BorrarMesa(Long id) {
-		mesaRepo.deleteById(id);
+	public void BorrarMesa(Mesa mesa) {
+		mesa.setEliminated(true);
+		mesa.setNombre(mesa.getNombre() + "-> Eliminado " + mesa.getId());
+		mesaRepo.save(mesa);
 	}
 }

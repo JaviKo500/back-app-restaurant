@@ -1,20 +1,14 @@
 package com.appetit.RestController;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,13 +25,19 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.appetit.configuration.RutaImagenes;
+import com.appetit.imagenes.IUploadFileService;
+import com.appetit.models.Categoria;
+import com.appetit.models.Combo;
 import com.appetit.models.Producto;
+import com.appetit.service.CategoriaService;
+import com.appetit.service.ComboService;
 import com.appetit.service.ProductoService;
 
-@Controller
+@RestController
 @CrossOrigin("*")
 @RequestMapping("/")
 public class ProductoRestController {
@@ -46,13 +45,57 @@ public class ProductoRestController {
 	@Autowired
 	ProductoService productoService;
 
-	@GetMapping("get/products")
-	public ResponseEntity<?> ListaDeProductos() {
+	@Autowired
+	CategoriaService categoriaService;
+
+	@Autowired
+	IUploadFileService fileService;
+
+	@Autowired
+	ComboService comboService;
+
+	@PutMapping("actualizar/estado/producto")
+	public ResponseEntity<?> CambiarEstadoProducto(@RequestBody Producto producto) {
+		Map<String, Object> response = new HashMap<>();
+
+		try {
+			productoService.RegistrarProducto(producto);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al cambiar el estado del producto.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		response.put("mensaje", "Se actualizó el estado");
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("productos/cargar/{term}")
+	public ResponseEntity<?> filtrarProductosByTermino(@PathVariable String term) {
 		Map<String, Object> response = new HashMap<>();
 		List<Producto> lista = new ArrayList<>();
 
 		try {
-			lista = productoService.ObtenerProductos();
+			lista = productoService.filtrarProductosNombre(term);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al obtener la lista de productos.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		response.put("mensaje", "lista de productos");
+		response.put("productos", lista);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	@GetMapping("get/client/products/{cate_id}")
+	public ResponseEntity<?> ListaDeProductos(@PathVariable Long cate_id) {
+		Map<String, Object> response = new HashMap<>();
+		List<Producto> lista = new ArrayList<>();
+
+		try {
+			Categoria cate = categoriaService.BuscarCategoriaById(cate_id);
+			lista = productoService.productosClienteEstado(cate);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al obtener la lista de productos.");
 			response.put("error", e.getMostSpecificCause().getMessage());
@@ -116,6 +159,8 @@ public class ProductoRestController {
 		}
 		// procso para guardar el producto
 		try {
+			// posiblemente quitar
+			producto.setEstado(true);
 			prod = productoService.RegistrarProducto(producto);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al registar el producto.");
@@ -155,108 +200,143 @@ public class ProductoRestController {
 		}
 
 		response.put("mensaje", "Producto registrado correctamente");
+		response.put("id_producto", id);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
 	// carga de imagenes
 
 	@PostMapping("register/product/img/upload")
-	public ResponseEntity<?> imgProducto(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id) {
-		System.out.println(id + " entro aqui");
+	public ResponseEntity<?> imgProducto(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id,
+			@RequestParam("tipo") String tipo) {
 		Map<String, Object> response = new HashMap<String, Object>();
+		System.out.print(tipo);
 		Producto producto = null;
-		try {
-			producto = productoService.BuscarProductoById(id);
-		} catch (DataAccessException e) {
-			response.put("mensaje", "Error al obtener el producto en la base de datos");
-			response.put("error", e.getMessage().concat(": ".concat(e.getMostSpecificCause().getMessage())));
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		Combo combo = null;
+		String nombreFotoAnterior = "";
 
-		if (producto == null) {
-			response.put("mensaje", "No existe el producto solicitado");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
-		}
-		if (!archivo.isEmpty()) {
-			// uuid genera und id random unico
-			String nombreArchivo = UUID.randomUUID().toString() + "_" + archivo.getOriginalFilename().replace(" ", "");
-			Path rutaArchivo = Paths.get(RutaImagenes.RUTA_PRODUCTOS).resolve(nombreArchivo).toAbsolutePath();// crea la
-																												// ruta
-			// con el nombre
+		if (tipo.equals("producto")) {
+			System.out.print("entro a prodcutp");
 			try {
-				Files.copy(archivo.getInputStream(), rutaArchivo);
-			} catch (IOException e) {
-				e.printStackTrace();
-				response.put("mensaje", "¡Error al guardar la imagen en la base de datos!");
-				response.put("error", e.getMessage().concat(": ").concat(e.getCause().getMessage()));
+				producto = productoService.BuscarProductoById(id);
+			} catch (DataAccessException e) {
+				response.put("mensaje", "Error al obtener el producto en la base de datos");
+				response.put("error", e.getMessage().concat(": ".concat(e.getMostSpecificCause().getMessage())));
 				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
-			// borrar foto anterior --------- si se borra un producto hay que llamar este
-			// metodo
-			String NomImgAnterior = producto.getImagen();
-			if (NomImgAnterior != null && NomImgAnterior.length() > 0) {
-				Path rutaImgAnterior = Paths.get(RutaImagenes.RUTA_PRODUCTOS).resolve(NomImgAnterior).toAbsolutePath();
-				File archivoImgAnterior = rutaImgAnterior.toFile();
-				if (archivoImgAnterior.exists() && archivoImgAnterior.canRead()) {
-					archivoImgAnterior.delete();
-				}
+			if (producto == null) {
+				response.put("mensaje", "No existe el producto solicitado");
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			}
+			nombreFotoAnterior = producto.getImagen();
+		}
+		// en caso de ser combo
+		if (tipo.equals("combo")) {
+			System.out.print("entro a combo" + id);
+			try {
+				combo = comboService.buscarbyId(id);
+			} catch (DataAccessException e) {
+				response.put("mensaje", "Error al obtener el combo en la base de datos");
+				response.put("error", e.getMessage().concat(": ".concat(e.getMostSpecificCause().getMessage())));
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+			}
+			if (combo == null) {
+				response.put("mensaje", "No existe el combo solicitado");
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+			}
+			nombreFotoAnterior = combo.getImagen();
+		}
+
+		if (!archivo.isEmpty()) {
+
+			String nombreArchivo = null;
+
+			try {
+				nombreArchivo = fileService.copiar(archivo, RutaImagenes.RUTA_PRODUCTOS);
+			} catch (IOException e) {
+				response.put("mensaje", "Error al subir la imágen del producto.");
+				response.put("error", e.getCause().getMessage());
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 
-			producto.setImagen(nombreArchivo);
-			productoService.RegistrarProducto(producto);
+			fileService.eliminar(nombreFotoAnterior, RutaImagenes.RUTA_PRODUCTOS);
+			// en el caso de ser un producto
+			if (producto != null) {
+				producto.setImagen(nombreArchivo);
+				productoService.RegistrarProducto(producto);
+				response.put("producto", producto);
+			}
+			// en el caso de ser combo
+			if (combo != null) {
+				combo.setImagen(nombreArchivo);
+				comboService.registrarCombo(combo);
+				response.put("combo", combo);
+			}
 			response.put("mensaje", "¡Imagen creada correctamente!");
-		} else {
-			response.put("mensaje", "¡No se econtro una imagen para asignar!");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
-		response.put("producto", producto);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
+
 	}
 
 	@GetMapping("product/img/{nombreImg:.+}") // :.+ es una expresion reguar de que es un archivo
 	public ResponseEntity<Resource> GetimagenProd(@PathVariable String nombreImg) {
 
-		Path rutaArchivo = Paths.get(RutaImagenes.RUTA_PRODUCTOS).resolve(nombreImg).toAbsolutePath();
 		Resource recurso = null;
+
 		try {
-			recurso = new UrlResource(rutaArchivo.toUri());
+			recurso = fileService.cargar(nombreImg, RutaImagenes.RUTA_PRODUCTOS);
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-		if (!recurso.exists() && recurso.isReadable()) {
-			throw new RuntimeException("No se pudo cargar la imagen de la ruta solicitada");
-		}
-
-		// forzar la descarga de la imagen
 		HttpHeaders cabecera = new HttpHeaders();
-		cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attaachment; filename=\"" + recurso.getFilename() + "\"");
+		cabecera.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + recurso.getFilename() + "\"");
 
 		return new ResponseEntity<Resource>(recurso, cabecera, HttpStatus.OK);
-
 	}
 
 	@DeleteMapping("delete/product/{id}")
-	public ResponseEntity<?> deleteCategoria(@PathVariable Long id) {
+	public ResponseEntity<?> deleteproducto(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
 		Producto prod = productoService.BuscarProductoById(id);
+		String nombreImagen = prod.getImagen();
 		String error = "";
 		try {
-			productoService.DeleteProductoById(id);
+			productoService.DeleteProductoById(prod);
+		} catch (DataAccessException e) {
+			response.put("error", e.getMostSpecificCause().getMessage());
+			response.put("mensaje", "Error al eliminar el producto");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		try {
+
+			fileService.eliminar(nombreImagen, RutaImagenes.RUTA_PRODUCTOS);
+		} catch (Exception e) {
+			error = "Error al eliminar la imagen del producto";
+		}
+
+		response.put("error", error);
+		response.put("mensaje", "Producto eliminado");
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	@DeleteMapping("delete/product/definitivo/{id}")
+	public ResponseEntity<?> deleteProductoDefinitivo(@PathVariable Long id) {
+		Map<String, Object> response = new HashMap<>();
+		Producto prod = productoService.BuscarProductoById(id);
+		String nombreImagen = prod.getImagen();
+		String error = "";
+		try {
+			productoService.DeleteDefinitiveById(id);
 		} catch (DataAccessException e) {
 			response.put("error", e.getMostSpecificCause().getMessage());
 			response.put("mensaje", "Error al eliminar el producto");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		try {
-			if (prod.getImagen() != null && prod.getImagen().length() > 0) {
-				Path rutaImg = Paths.get(RutaImagenes.RUTA_PRODUCTOS).resolve(prod.getImagen()).toAbsolutePath();
-				File archivoImg = rutaImg.toFile();
-				if (archivoImg.exists() && archivoImg.canRead()) {
-					archivoImg.delete();
-				}
-			}
+
+			fileService.eliminar(nombreImagen, RutaImagenes.RUTA_PRODUCTOS);
 		} catch (Exception e) {
 			error = "Error al eliminar la imagen del producto";
 		}

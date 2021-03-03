@@ -1,6 +1,7 @@
 package com.appetit.RestController;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,17 +19,48 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.appetit.models.Mesa;
 import com.appetit.service.MesaService;
 
-@Controller
+@RestController
 @CrossOrigin("*")
 @RequestMapping("/")
 public class MesaRestController {
 
 	@Autowired
 	MesaService mesaService;
+
+	@GetMapping("get/all/mesas")
+	public List<Mesa> obtenerMesas() {
+		return mesaService.getAllMesasClienteEstado();
+	}
+
+	@GetMapping("get/mesa/cliente/{id}")
+	public ResponseEntity<?> obtenerMesaPorId(@PathVariable Long id) {
+		Map<String, Object> response = new HashMap<>();
+		Mesa mes = null;
+
+		try {
+			mes = mesaService.getMesaById(id);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al obtener la mesa.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		if (mes == null) {
+			response.put("mensaje", "La mesa no existe.");
+			response.put("error", "Error de id de mesa");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+		}
+
+		response.put("mensaje", "mesa obtenida");
+		response.put("mesa", mes);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+
+	}
 
 	@PostMapping("register/mesa")
 	public ResponseEntity<?> RegistrarMesa(@RequestBody Mesa mesa) {
@@ -131,8 +162,9 @@ public class MesaRestController {
 	@DeleteMapping("delete/mesa/{id}")
 	public ResponseEntity<?> DeleteMesa(@PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
+		Mesa mesa = mesaService.getMesaById(id);
 		try {
-			mesaService.BorrarMesa(id);
+			mesaService.BorrarMesa(mesa);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al actualizar la Mesa.");
 			response.put("error", e.getMostSpecificCause().getMessage());

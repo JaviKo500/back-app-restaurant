@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 
+import com.appetit.models.Cliente;
+import com.appetit.models.Combo;
 import com.appetit.models.Usuario;
 
 @Service
@@ -17,22 +19,22 @@ public class ValidacionService {
 				"^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@" + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$");
 		Matcher mather = pattern.matcher(email);
 		if (mather.find() != true) {
-			return false;
+			return false; // si es falso si contiene
 		}
 		return true;
 	}
 
 	public Boolean CamposConEspacios(String valor) {
-		Pattern p = Pattern.compile("^[a-zA-Z ]*$");
+		Pattern p = Pattern.compile("^[a-zA-ZñÑ ]*$");
 		Matcher val = p.matcher(valor);
 		if (val.find() != true) {
-			return false;
+			return false; // si es falso contiene caracteres especiales
 		}
 		return true;
 	}
 
 	public Boolean CamposSinEspacios(String valor) {
-		Pattern p = Pattern.compile("^[a-zA-Z0-9]*$");
+		Pattern p = Pattern.compile("^[a-zA-ZñÑ0-9]*$");
 		Matcher val = p.matcher(valor);
 		if (val.find() != true) {
 			return false;
@@ -66,7 +68,69 @@ public class ValidacionService {
 		if (Email(u.getEmail()) == false) {
 			lista.add("El email ingresado es inválido.");
 		}
+		if (u.getRoles().size() == 0) {
+			lista.add("Debe seleccionar un rol para el usuario.");
+		}
+		if (u.getSexo() == null) {
+			lista.add("Debe seleccionar un genero para el usuario.");
+		}
 		return lista;
 	}
 
+	// validar cliente
+	public List<String> camposCliente(Cliente c) {
+		List<String> lista = new ArrayList<>();
+		if (c.getNombres().length() < 3) {
+			lista.add("El nombre debe contener almenos 3 letras.");
+		}
+		if (CamposConEspacios(c.getNombres()) == false) {
+			lista.add("El nombre no debe contener caracteres especiales.");
+		}
+		if (c.getApellidos().length() < 3) {
+			lista.add("El apellido debe contener almenos 3 caracteres.");
+		}
+		if (CamposConEspacios(c.getApellidos()) == false) {
+			lista.add("El Apellido no debe contener caracteres especiales.");
+		}
+		if (c.getCedula().length() < 10) {
+			lista.add("La cédula debe contener 10 dígitos.");
+		}
+		if (Email(c.getEmail()) == false) {
+			lista.add("El email es inválido.");
+		}
+		if (c.getDireccion().length() < 3) {
+			lista.add("Ingrese una dirección correcta.");
+		}
+		if (c.getCelular().length() < 10) {
+			lista.add("El Celular debe contener almenos 10 dígitos.");
+		}
+		return lista;
+	}
+
+	// validar productos
+
+	// validar combo
+	public List<String> camposCombo(Combo c) {
+		List<String> errores = new ArrayList<>();
+		if (c.getCategoria() == null) {
+			errores.add("Seleccionar una categoría.");
+		}
+		if (c.getImagen() == null && c.getId() != null) {
+			errores.add("Seleccionar una imágen");
+		}
+		if (c.getItemsCombo().size() == 0) {
+			errores.add("Seleccionar productos para el combo.");
+		}
+		if (c.getNombre().length() < 3) {
+			errores.add("Ingresar un nombre válido");
+		}
+		if (c.getPrecio() == 0) {
+			errores.add("Ingresar un precio válido");
+		}
+		if (CamposConEspacios(c.getNombre()) == false) {
+			errores.add("No ingresar caracteres especiales en el nombre.");
+		}
+
+		return errores;
+	}
 }
