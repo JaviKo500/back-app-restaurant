@@ -30,8 +30,12 @@ public class Combo implements Serializable {
 	private Boolean estado;
 
 	private String imagen;
-	
+
 	private Boolean eliminado;
+
+	private String infoExtra;
+
+	private String saborBebida;
 
 	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -49,6 +53,14 @@ public class Combo implements Serializable {
 		this.id = id;
 	}
 
+	public String getSaborBebida() {
+		return saborBebida;
+	}
+
+	public void setSaborBebida(String saborBebida) {
+		this.saborBebida = saborBebida;
+	}
+
 	public String getNombre() {
 		return nombre;
 	}
@@ -63,6 +75,14 @@ public class Combo implements Serializable {
 
 	public void setDescripcion(String descripcion) {
 		this.descripcion = descripcion;
+	}
+
+	public String getInfoExtra() {
+		return infoExtra;
+	}
+
+	public void setInfoExtra(String infoExtra) {
+		this.infoExtra = infoExtra;
 	}
 
 	public Double getPrecio() {

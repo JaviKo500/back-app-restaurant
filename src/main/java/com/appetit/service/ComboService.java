@@ -38,4 +38,14 @@ public class ComboService {
 		combo.setEliminado(false);
 		return comboRepo.save(combo);
 	}
+	
+	@Transactional
+	public Combo AsignarInforExtraCombo(Combo combo) {
+		return comboRepo.save(combo);
+	}
+	
+	@Transactional(readOnly = true)
+	public List<Combo> filtrarCombosNombre(String termino) {
+		return comboRepo.findByEstadoAndEliminadoAndNombreContainingIgnoreCase(true, false, termino);
+	}
 }

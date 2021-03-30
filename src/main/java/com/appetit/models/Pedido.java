@@ -23,6 +23,10 @@ public class Pedido implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
+	private String numeroDoc;
+
+	String enEspera;
+
 	@Temporal(TemporalType.DATE)
 	private Date fecha = new Date();
 
@@ -51,9 +55,9 @@ public class Pedido implements Serializable {
 	@ManyToOne(fetch = FetchType.LAZY)
 	private Cliente cliente;
 
-	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-	@ManyToOne(fetch = FetchType.LAZY)
-	private MedioPago medioPago;
+	private Boolean isAnulado;
+
+	private Boolean isEntregado;
 
 	public Long getId() {
 		return id;
@@ -61,6 +65,38 @@ public class Pedido implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Boolean getIsEntregado() {
+		return isEntregado;
+	}
+
+	public void setIsEntregado(Boolean isEntregado) {
+		this.isEntregado = isEntregado;
+	}
+
+	public String getEnEspera() {
+		return enEspera;
+	}
+
+	public void setEnEspera(String enEspera) {
+		this.enEspera = enEspera;
+	}
+
+	public Boolean getIsAnulado() {
+		return isAnulado;
+	}
+
+	public void setIsAnulado(Boolean isAnulado) {
+		this.isAnulado = isAnulado;
+	}
+
+	public String getNumeroDoc() {
+		return numeroDoc;
+	}
+
+	public void setNumeroDoc(String numeroDoc) {
+		this.numeroDoc = numeroDoc;
 	}
 
 	public List<ItemPedido> getItems() {
@@ -87,14 +123,6 @@ public class Pedido implements Serializable {
 		this.cliente = cliente;
 	}
 
-	public MedioPago getMedioPago() {
-		return medioPago;
-	}
-
-	public void setMedioPago(MedioPago medioPago) {
-		this.medioPago = medioPago;
-	}
-
 	public Date getFecha() {
 		return fecha;
 	}
@@ -109,6 +137,14 @@ public class Pedido implements Serializable {
 
 	public void setHora(Date hora) {
 		this.hora = hora;
+	}
+
+	public List<ItemPedidoCombo> getCombos() {
+		return combos;
+	}
+
+	public void setCombos(List<ItemPedidoCombo> combos) {
+		this.combos = combos;
 	}
 
 	public Double getTotal() {

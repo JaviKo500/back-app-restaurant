@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,6 +63,7 @@ public class MesaRestController {
 
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@PostMapping("register/mesa")
 	public ResponseEntity<?> RegistrarMesa(@RequestBody Mesa mesa) {
 		Map<String, Object> response = new HashMap<>();
@@ -96,6 +98,7 @@ public class MesaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@GetMapping("get/mesa/{page}")
 	public ResponseEntity<?> ListaDeMesasPage(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
@@ -115,6 +118,7 @@ public class MesaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@PutMapping("update/mesa/{id}")
 	public ResponseEntity<?> UpdateDeMesas(@RequestBody Mesa mesa, @PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -159,6 +163,7 @@ public class MesaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@DeleteMapping("delete/mesa/{id}")
 	public ResponseEntity<?> DeleteMesa(@PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();

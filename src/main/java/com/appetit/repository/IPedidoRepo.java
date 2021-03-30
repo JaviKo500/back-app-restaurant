@@ -12,5 +12,7 @@ import com.appetit.models.Pedido;
 @Repository
 public interface IPedidoRepo extends JpaRepository<Pedido, Long> {
 	public List<Pedido> findByFechaAndEstado(Date fecha, Estado estado);
+	
+	public List<Pedido> findByFechaAndIsAnuladoAndIsEntregado(Date fecha, Boolean isAnulado, Boolean isEntregado);
 
 }

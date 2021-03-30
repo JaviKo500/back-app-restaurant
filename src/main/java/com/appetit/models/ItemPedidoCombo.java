@@ -24,6 +24,8 @@ public class ItemPedidoCombo implements Serializable {
 
 	private Integer cantidad;
 
+	private String infoExtra;
+
 	public Long getId() {
 		return id;
 	}
@@ -38,6 +40,14 @@ public class ItemPedidoCombo implements Serializable {
 
 	public void setCombo(Combo combo) {
 		this.combo = combo;
+	}
+
+	public String getInfoExtra() {
+		return infoExtra;
+	}
+
+	public void setInfoExtra(String infoExtra) {
+		this.infoExtra = infoExtra;
 	}
 
 	public Integer getCantidad() {

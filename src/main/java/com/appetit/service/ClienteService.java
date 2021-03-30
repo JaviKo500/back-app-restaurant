@@ -15,7 +15,7 @@ public class ClienteService {
 	private IClienteRepo clienteRepo;
 
 	public Page<Cliente> listarClientesPaginado(Pageable pageable) {
-		return clienteRepo.findAll(pageable);
+		return clienteRepo.findByEliminated(pageable, false);
 	}
 
 	public Cliente RegisterCliente(Cliente cliente) {
@@ -29,9 +29,20 @@ public class ClienteService {
 	public Cliente findClienteByID(Long id) {
 		return clienteRepo.findById(id).orElse(null);
 	}
+	
+	public Cliente findClienteByIDAndEliminated(Long id) {
+		return clienteRepo.findByEliminatedAndId(false, id);
+	}
 
 	public void deleteClienteByID(Long id) {
 		clienteRepo.deleteById(id);
 	}
 
+	public void deleteClienteLogicamente(Cliente cliente) {
+		cliente.setEliminated(true);
+		cliente.setCedula(cliente.getId() + " " + cliente.getCedula());
+		cliente.setEmail(cliente.getId() + " " + cliente.getEmail());
+		cliente.setCelular(cliente.getId() + " " + cliente.getCelular());
+		clienteRepo.save(cliente);
+	}
 }

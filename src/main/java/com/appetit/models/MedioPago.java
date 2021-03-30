@@ -14,6 +14,8 @@ public class MedioPago implements Serializable {
 	private Long id;
 
 	private String tipoPago;
+	
+	private String folio;
 
 	private Boolean estado;
 
@@ -39,6 +41,14 @@ public class MedioPago implements Serializable {
 
 	public void setEstado(Boolean estado) {
 		this.estado = estado;
+	}
+
+	public String getFolio() {
+		return folio;
+	}
+
+	public void setFolio(String folio) {
+		this.folio = folio;
 	}
 
 	private static final long serialVersionUID = 1L;

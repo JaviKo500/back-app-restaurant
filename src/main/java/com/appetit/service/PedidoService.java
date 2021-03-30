@@ -20,8 +20,18 @@ public class PedidoService {
 	IPedidoRepo pedidoRepo;
 
 	@Transactional(readOnly = true)
+	public Pedido obtenerPedidoId(Long id) {
+		return pedidoRepo.findById(id).orElse(null);
+	}
+
+	@Transactional(readOnly = true)
 	public List<Pedido> obtenerPedidosDiaFechaAndEstado(Date fecha, Estado estado) {
 		return pedidoRepo.findByFechaAndEstado(fecha, estado);
+	}
+
+	@Transactional(readOnly = true)
+	public List<Pedido> obtenerPedidosDiaAndNoDispoNoAnulado(Date fecha) {
+		return pedidoRepo.findByFechaAndIsAnuladoAndIsEntregado(fecha, false, false);
 	}
 
 	@Transactional(readOnly = true)

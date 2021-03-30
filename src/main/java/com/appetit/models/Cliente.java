@@ -36,6 +36,16 @@ public class Cliente implements Serializable {
 	@NotNull(message = "El email es un campo obligatorio.")
 	private String email;
 
+	private Boolean eliminated;
+
+	public Boolean getEliminated() {
+		return eliminated;
+	}
+
+	public void setEliminated(Boolean eliminated) {
+		this.eliminated = eliminated;
+	}
+
 	public Long getId() {
 		return id;
 	}

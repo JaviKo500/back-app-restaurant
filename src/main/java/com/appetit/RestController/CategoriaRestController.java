@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,6 +71,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	//productos clientes
 	@GetMapping("get/categories/products")
 	public ResponseEntity<?> GetCategorias() {
 		Map<String, Object> response = new HashMap<>();
@@ -91,6 +93,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@GetMapping("get/categories/{page}")
 	public ResponseEntity<?> GetCategoriasPage(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
@@ -109,6 +112,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@PostMapping("register/category")
 	public ResponseEntity<?> RegistarCategoria(@RequestBody Categoria categoria) {
 		Map<String, Object> response = new HashMap<>();
@@ -147,6 +151,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@PutMapping("update/category/{id}")
 	public ResponseEntity<?> ActualizarCategoria(@RequestBody Categoria categoria, @PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -193,7 +198,7 @@ public class CategoriaRestController {
 	}
 
 	// metodo de carga de imagenes
-
+	@Secured({ "ROLE_ADMIN" })
 	@PostMapping("register/category/image/upload")
 	public ResponseEntity<?> imgProducto(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id) {
 
@@ -254,6 +259,7 @@ public class CategoriaRestController {
 
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@DeleteMapping("delete/category/{id}")
 	public ResponseEntity<?> deleteCategoria(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -277,6 +283,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@DeleteMapping("delete/category/definitive/{id}")
 	public ResponseEntity<?> deleteCategoriaDefinitive(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();

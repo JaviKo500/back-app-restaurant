@@ -7,6 +7,8 @@ import java.util.regex.Pattern;
 
 import org.springframework.stereotype.Service;
 
+import com.appetit.models.ArqueoCaja;
+import com.appetit.models.Caja;
 import com.appetit.models.Cliente;
 import com.appetit.models.Combo;
 import com.appetit.models.Usuario;
@@ -33,6 +35,24 @@ public class ValidacionService {
 		return true;
 	}
 
+	public Boolean CamposNumericos(String valor) {
+		Pattern p = Pattern.compile("^[0-9]*$");
+		Matcher val = p.matcher(valor);
+		if (val.find() != true) {
+			return false; // si es falso contiene caracteres especiales
+		}
+		return true;
+	}
+
+	public Boolean CamposConEspaciosYNumeros(String valor) {
+		Pattern p = Pattern.compile("^[a-zA-ZñÑ0-9 ]*$");
+		Matcher val = p.matcher(valor);
+		if (val.find() != true) {
+			return false; // si es falso contiene caracteres especiales
+		}
+		return true;
+	}
+
 	public Boolean CamposSinEspacios(String valor) {
 		Pattern p = Pattern.compile("^[a-zA-ZñÑ0-9]*$");
 		Matcher val = p.matcher(valor);
@@ -40,6 +60,39 @@ public class ValidacionService {
 			return false;
 		}
 		return true;
+	}
+
+	// validacion de arqueo
+	public List<String> camposArqueo(ArqueoCaja a) {
+		List<String> lista = new ArrayList<>();
+		if (a.getCaja() == null) {
+			lista.add("Es necesario seleccionar una caja.");
+		}
+		if (a.getUsuario() == null) {
+			lista.add("El usuario responsable no existe");
+		}
+		return lista;
+	}
+
+	// validacion de caja
+	public List<String> camposCaja(Caja c) {
+		List<String> errores = new ArrayList<>();
+		if (c.getNombreCaja().length() < 2) {
+			errores.add("Ingrese un nombre válido.");
+		} else {
+			if (CamposConEspaciosYNumeros(c.getNombreCaja()) == false) {
+				errores.add("El nombre debe contener solo caracteres alfabeticos.");
+			}
+		}
+
+		if (c.getNumeroCaja().length() == 0) {
+			errores.add("Ingrese un código/número de caja válido.");
+		} else {
+			if (CamposSinEspacios(c.getNumeroCaja()) == false) {
+				errores.add("El código/número de caja debe contener caracteres alfabeticos.");
+			}
+		}
+		return errores;
 	}
 
 	// validacion campos usuario
@@ -127,7 +180,7 @@ public class ValidacionService {
 		if (c.getPrecio() == 0) {
 			errores.add("Ingresar un precio válido");
 		}
-		if (CamposConEspacios(c.getNombre()) == false) {
+		if (CamposConEspaciosYNumeros(c.getNombre()) == false) {
 			errores.add("No ingresar caracteres especiales en el nombre.");
 		}
 

@@ -1,5 +1,6 @@
 package com.appetit.RestController;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,6 +42,26 @@ public class ComboRestController {
 	@Autowired
 	CategoriaService categoriaService;
 
+	@Secured({ "ROLE_ADMIN" })
+	@GetMapping("combos/cargar/{term}")
+	public ResponseEntity<?> filtrarCombosByTermino(@PathVariable String term) {
+		Map<String, Object> response = new HashMap<>();
+		List<Combo> lista = new ArrayList<>();
+
+		try {
+			lista = comboService.filtrarCombosNombre(term);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al obtener la lista de combos.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		response.put("mensaje", "lista de combos");
+		response.put("combos", lista);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	@Secured({ "ROLE_ADMIN" })
 	@PutMapping("actualizar/estado/combo")
 	public ResponseEntity<?> CambiarEstadoProducto(@RequestBody Combo combo) {
 		Map<String, Object> response = new HashMap<>();
@@ -56,6 +78,7 @@ public class ComboRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@GetMapping("get/combo/{id}")
 	public ResponseEntity<?> GetCategorias(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -80,6 +103,7 @@ public class ComboRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	// combos de la vista del cliente
 	@GetMapping("get/categories/combos")
 	public ResponseEntity<?> GetCategorias() {
 		Map<String, Object> response = new HashMap<>();
@@ -121,6 +145,7 @@ public class ComboRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@GetMapping("get/combos-disponibles/{page}")
 	public ResponseEntity<?> obtenerCombos(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
@@ -140,6 +165,7 @@ public class ComboRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@PostMapping("registrar/combo")
 	public ResponseEntity<?> registrarCombo(@RequestBody Combo combo) {
 		Map<String, Object> response = new HashMap<>();

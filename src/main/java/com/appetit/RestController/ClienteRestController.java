@@ -5,8 +5,12 @@ import java.util.List;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +35,26 @@ public class ClienteRestController {
 	@Autowired
 	private ValidacionService validacionService;
 
+	// obtener listado de clientes
+	@Secured({ "ROLE_ADMIN" })
+	@GetMapping("get/clientes/page/{page}")
+	public ResponseEntity<?> obtenerClientesPageable(@PathVariable Integer page) {
+		Map<String, Object> response = new HashMap<>();
+		Page<Cliente> clientes = null;
+		try {
+			Pageable pageable = PageRequest.of(page, 10);
+			clientes = clienteService.listarClientesPaginado(pageable);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "lista no obtenida");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		response.put("mensaje", "Lista obtenida");
+		response.put("clientes", clientes);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	// registro por parte del cliente
 	@PostMapping("client/register/client")
 	public ResponseEntity<?> guardarCliente(@RequestBody Cliente cliente) {
 		Map<String, Object> response = new HashMap<>();
@@ -43,21 +67,29 @@ public class ClienteRestController {
 			if (cliente.getCedula().length() == 9) {
 				cliente.setCedula("0" + cliente.getCedula());
 			}
+			if (cliente.getCelular().length() == 9) {
+				cliente.setCelular("0" + cliente.getCelular());
+			}
 
-			cliente.setCelular("0" + cliente.getCelular());
+		}
+		// en caso de registro nuevo asisgnar estado de falso al emiminado
+		if (cliente.getId() == null) {
+			cliente.setEliminated(false);
 		}
 		List<String> errores = validacionService.camposCliente(cliente);
 		if (errores.size() != 0) {
-			response.put("mensaje", errores);
+			response.put("errores", errores);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CONFLICT);
 		}
-
-		clie = clienteService.FindClineteByCedula(cliente.getCedula());
-		if (clie != null) {
-			response.put("mensaje",
-					"El cliente con la cédula: " + clie.getCedula() + " Ya existe en la base de datos.");
-			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+		if (cliente.getId() == null) {
+			clie = clienteService.FindClineteByCedula(cliente.getCedula());
+			if (clie != null) {
+				response.put("mensaje",
+						"El cliente con la cédula: " + clie.getCedula() + " Ya existe en la base de datos.");
+				return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
+			}
 		}
+
 		try {
 			clie = clienteService.RegisterCliente(cliente);
 		} catch (DataAccessException e) {
@@ -71,6 +103,7 @@ public class ClienteRestController {
 	}
 
 	// metodo para actualizar un cliente
+	@Secured({ "ROLE_ADMIN" })
 	@PutMapping("cliente/update/{id}")
 	public ResponseEntity<?> ActualizarClienteid(@RequestBody Cliente cliente, @PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -112,6 +145,7 @@ public class ClienteRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
+	@Secured({ "ROLE_ADMIN" })
 	@GetMapping("cliente/findbyced/{cedula}")
 	public ResponseEntity<?> ObtenerClienteCedula(@PathVariable String cedula) {
 		Map<String, Object> response = new HashMap<>();
@@ -138,6 +172,30 @@ public class ClienteRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	// obtener cliente por cedula
+	@Secured({ "ROLE_ADMIN" })
+	@GetMapping("cliente/find-by-id/{id}")
+	public ResponseEntity<?> ObtenerClienteId(@PathVariable Long id) {
+		Map<String, Object> response = new HashMap<>();
+		Cliente client = null;
+		try {
+			client = clienteService.findClienteByIDAndEliminated(id);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al intentar obtener un cliente.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		if (client == null) {
+			response.put("mensaje", "El cliente no existe en la base de datos.");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+		}
+
+		response.put("mensaje", "Cliente obtenido");
+		response.put("cliente", client);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	@Secured({ "ROLE_ADMIN" })
 	@DeleteMapping("cliente/delete/{id}")
 	public ResponseEntity<?> EliminarClienteID(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -156,13 +214,13 @@ public class ClienteRestController {
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 		try {
-			clienteService.deleteClienteByID(id);
+			clienteService.deleteClienteLogicamente(clien);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al intentar eliminar un cliente.");
 			response.put("error", e.getMostSpecificCause().getMessage());
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		response.put("mensaje", "El cliente fue eliminado con éxito");
+		response.put("mensaje", "El cliente fué eliminado con éxito");
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 }

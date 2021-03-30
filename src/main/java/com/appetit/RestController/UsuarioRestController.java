@@ -11,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,7 +39,15 @@ public class UsuarioRestController {
 	@Autowired
 	private ValidacionService validacionService;
 
+	// lista de usuarios para el arqueo
+	@Secured("ROLE_ADMIN")
+	@GetMapping("get/usuarios/to-arqueos")
+	public List<Usuario> obtenerusuariosParaArqueos() {
+		return usuarioService.ObtenerListaUsuariosArqueos();
+	}
+
 	// lista de roles existentes
+	@Secured("ROLE_ADMIN")
 	@GetMapping("get/user/roles")
 	public ResponseEntity<?> obtenerRoles() {
 		Map<String, Object> response = new HashMap<>();
@@ -57,6 +66,7 @@ public class UsuarioRestController {
 	}
 
 	// lista de sexos existentes
+	@Secured("ROLE_ADMIN")
 	@GetMapping("get/user/sexos")
 	public ResponseEntity<?> obtenerSexos() {
 		Map<String, Object> response = new HashMap<>();
@@ -75,6 +85,7 @@ public class UsuarioRestController {
 	}
 
 	// obtener usuario por id
+	@Secured("ROLE_ADMIN")
 	@GetMapping("get/user/{id}")
 	public ResponseEntity<?> obtenerUsuarioId(@PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -97,7 +108,33 @@ public class UsuarioRestController {
 		response.put("usuario", user);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
+	
+	// obtener usuario por id
+	@Secured("ROLE_ADMIN")
+	@GetMapping("get/user/movimiento/{id}")
+	public ResponseEntity<?> obtenerUsuarioIdMovimiento(@PathVariable long id) {
+		Map<String, Object> response = new HashMap<>();
+		Usuario user = null;
+		try {
+			user = usuarioService.buscarusuarioByIdMovimiento(id);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al obtener el usuario");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 
+		if (user == null) {
+			response.put("mensaje", "No existe el usuario en la base de datos.");
+			response.put("error", "El id de usuario no coinside.");
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
+		}
+
+		response.put("mensaje", "Usuario encontrado");
+		response.put("usuario", user);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	@Secured("ROLE_ADMIN")
 	@GetMapping("get/users/{page}")
 	public ResponseEntity<?> registrarUsuario(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
@@ -117,6 +154,7 @@ public class UsuarioRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PostMapping("register/user")
 	public ResponseEntity<?> registrarUsuario(@RequestBody Usuario usuario) {
 		Map<String, Object> response = new HashMap<>();
@@ -127,6 +165,11 @@ public class UsuarioRestController {
 		} else {
 			usuario.setTelefono("0" + usuario.getTelefono());
 			usuario.setCedula("0" + usuario.getCedula());
+		}
+		// asignar estado true al usuario
+		if (usuario.getId() == null) {
+			usuario.setEstado(true);
+			usuario.setEliminated(false);
 		}
 
 		// validar campos
@@ -149,6 +192,7 @@ public class UsuarioRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PutMapping("update/user")
 	public ResponseEntity<?> actualizarUsuario(@RequestBody Usuario usuario) {
 		Map<String, Object> response = new HashMap<>();
@@ -204,6 +248,7 @@ public class UsuarioRestController {
 
 	}
 
+	@Secured("ROLE_ADMIN")
 	@PutMapping("update/user/estado")
 	public ResponseEntity<?> actualizarEstadoUsuario(@RequestBody Usuario usuario) {
 		Map<String, Object> response = new HashMap<>();
@@ -239,15 +284,18 @@ public class UsuarioRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	@Secured("ROLE_ADMIN")
 	@DeleteMapping("delete/user/{id}")
 	public ResponseEntity<?> eliminarUsuario(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
-		if (id == null) {
+		Usuario user = usuarioService.buscarusuarioById(id);
+		if (user == null) {
 			response.put("mensaje", "Error el id de usuario");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		}
+
 		try {
-			usuarioService.EliminarUsuario(id);
+			usuarioService.EliminarLogicamenteUsuario(user);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al intentar eliminar un usuario.");
 			response.put("error", e.getMostSpecificCause().getMessage());

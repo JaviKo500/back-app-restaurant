@@ -1,6 +1,7 @@
 package com.appetit.models;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -34,6 +35,8 @@ public class Usuario implements Serializable {
 
 	private String telefono;
 
+	private Boolean eliminated;
+
 	@Column(unique = true)
 	private String username;
 	private String password;
@@ -42,10 +45,9 @@ public class Usuario implements Serializable {
 
 	@ManyToMany
 	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
-	@JoinTable(name="usuarios_roles", joinColumns= @JoinColumn(name="usuario_id"),
-	inverseJoinColumns=@JoinColumn(name="role_id"),
-	uniqueConstraints= {@UniqueConstraint(columnNames= {"usuario_id", "role_id"})})
-	private List<Role> roles;
+	@JoinTable(name = "usuarios_roles", joinColumns = @JoinColumn(name = "usuario_id"), inverseJoinColumns = @JoinColumn(name = "role_id"), uniqueConstraints = {
+			@UniqueConstraint(columnNames = { "usuario_id", "role_id" }) })
+	private List<Role> roles=new ArrayList<Role>();
 
 	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -57,6 +59,14 @@ public class Usuario implements Serializable {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+
+	public Boolean getEliminated() {
+		return eliminated;
+	}
+
+	public void setEliminated(Boolean eliminated) {
+		this.eliminated = eliminated;
 	}
 
 	public Sexo getSexo() {
