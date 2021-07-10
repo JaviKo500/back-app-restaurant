@@ -24,20 +24,19 @@ public class ResourceServerConfig extends ResourceServerConfigurerAdapter {
 		http.authorizeRequests()
 				.antMatchers("/get/client/products/**", "/product/img/**", "/get/client/combos/{id_cate}",
 						"/register/new/pedido/{cedula}", "/get/all/mesas", "/get/categories/products",
-						"/get/categories/combos", "/get/mesa/cliente/**", "/category/img/**","/client/register/client")
-				.permitAll()
-				.antMatchers(HttpMethod.POST, "fsd").hasAnyRole("ADMIN").anyRequest().authenticated().and().cors()
-				.configurationSource(corsConfigurationSource());
+						"/get/categories/combos", "/get/mesa/cliente/**", "/category/img/**", "/client/register/client",
+						"/chat-websocket/**", "/chat/**", "/app/**")
+				.permitAll().antMatchers(HttpMethod.GET, "/chat-websocket/**", "/chat/**", "/app/**").permitAll()
+				.anyRequest().authenticated().and().cors().configurationSource(corsConfigurationSource());
 	}
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource() {
 		CorsConfiguration configuration = new CorsConfiguration();
-		configuration.setAllowedOrigins(Arrays.asList("http://192.168.10.50:4200")); // especificar direccion de
-																						// angular
+		configuration.setAllowedOrigins(Arrays.asList("*")); // especificar direccion de angular
 		configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 		configuration.setAllowCredentials(true);
-		configuration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization"));
+		configuration.setAllowedHeaders(Arrays.asList("*"));
 		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
 		source.registerCorsConfiguration("/**", configuration);
 		return source;

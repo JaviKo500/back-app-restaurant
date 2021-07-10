@@ -33,11 +33,13 @@ public class MesaRestController {
 	@Autowired
 	MesaService mesaService;
 
+	// metodo para los clientes
 	@GetMapping("get/all/mesas")
 	public List<Mesa> obtenerMesas() {
 		return mesaService.getAllMesasClienteEstado();
 	}
 
+	// obtener la mesa por id para los clientes
 	@GetMapping("get/mesa/cliente/{id}")
 	public ResponseEntity<?> obtenerMesaPorId(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -63,7 +65,7 @@ public class MesaRestController {
 
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PostMapping("register/mesa")
 	public ResponseEntity<?> RegistrarMesa(@RequestBody Mesa mesa) {
 		Map<String, Object> response = new HashMap<>();
@@ -98,12 +100,11 @@ public class MesaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/mesa/{page}")
 	public ResponseEntity<?> ListaDeMesasPage(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
 		Page<Mesa> lista;
-
 		try {
 			Pageable pageable = PageRequest.of(page, 10);
 			lista = mesaService.ObtenerMesaPage(pageable);
@@ -118,7 +119,7 @@ public class MesaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PutMapping("update/mesa/{id}")
 	public ResponseEntity<?> UpdateDeMesas(@RequestBody Mesa mesa, @PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -163,7 +164,7 @@ public class MesaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@DeleteMapping("delete/mesa/{id}")
 	public ResponseEntity<?> DeleteMesa(@PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();

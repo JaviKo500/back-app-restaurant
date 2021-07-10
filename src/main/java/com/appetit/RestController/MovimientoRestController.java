@@ -58,16 +58,15 @@ public class MovimientoRestController {
 	ArqueoService arqueoService;
 
 	// obtener lista de medios de pago
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/medio-pago")
 	public List<MedioPago> obtenerMediosDePago() {
 		return movimientoService.ObtenerMediosDePago();
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PostMapping("finalizar-pedido/crear-movimiento")
 	public ResponseEntity<?> TerminarPedidoNewMovimientoPedido(@RequestBody MovimientoCaja movimiento) {
-		System.out.print("hola");
 		Map<String, Object> response = new HashMap<>();
 		List<String> errores = validacionMov.finalizarPedidoMovimientos(movimiento);
 		Usuario usuario = null;
@@ -164,6 +163,7 @@ public class MovimientoRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/movimientos/id_usuario/{id}/page/{page}")
 	public ResponseEntity<?> obtenerMovimientosFechaUsuario(@PathVariable Long id, @PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
@@ -179,7 +179,7 @@ public class MovimientoRestController {
 		}
 		if (user == null) {
 			response.put("mensaje", "Su sessión tiene problemas.");
-			response.put("error", "Su id de usuario pudo haber sido eliminado o ddeshabilitado.");
+			response.put("error", "Su id de usuario pudo haber sido eliminado o deshabilitado.");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.NOT_FOUND);
 		}
 
@@ -197,28 +197,25 @@ public class MovimientoRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	// no finalizado /***********************************************************
-	/*
-	 * @PostMapping("registrar/movimiento-caja/") public ResponseEntity<?>
-	 * registrarMovimiento(@RequestBody MovimientoCaja movimiento) { Map<String,
-	 * Object> response = new HashMap<>(); List<String> errores =
-	 * validacionMov.validacionesMovimientos(movimiento); if (errores.size() != 0) {
-	 * response.put("mensaje", "errores al finalizar pedido"); response.put("error",
-	 * "error de campos"); response.put("errores", errores); return new
-	 * ResponseEntity<Map<String, Object>>(response, HttpStatus.CONFLICT); } //
-	 * procesar el pedido try { Pedido p = movimiento.getPedido(); // Estado est //
-	 * p.setEstado(estado);
-	 * pedidoService.registrarNuevoPedido(movimiento.getPedido()); } catch
-	 * (DataAccessException e) { response.put("mensaje",
-	 * "Error al finalizar el pedido."); response.put("error",
-	 * e.getMostSpecificCause().getMessage()); return new ResponseEntity<Map<String,
-	 * Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR); } try {
-	 * movimientoService.registrarMovimiento(movimiento); } catch
-	 * (DataAccessException e) { response.put("mensaje",
-	 * "Error al procesar el movimiento"); response.put("error",
-	 * e.getMostSpecificCause().getMessage()); return new ResponseEntity<Map<String,
-	 * Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR); }
-	 * response.put("mensaje", "movimiento correcto"); return new
-	 * ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED); }
-	 */
+	@Secured("ROLE_ADMIN")
+	@GetMapping("get/movimientos/from/{fecha_ini}/to/{fecha_fin}/page/{page}")
+	public ResponseEntity<?> obtenerMovimientosFechas(@PathVariable Date fecha_ini, @PathVariable Date fecha_fin,
+			@PathVariable Integer page) {
+		Map<String, Object> response = new HashMap<>();
+		Page<MovimientoCaja> movimientos;
+
+		try {
+			Pageable pageable = PageRequest.of(page, 10);
+			movimientos = movimientoService.obtenerMovimientosEntreFechas(fecha_ini, fecha_fin, pageable);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error al obtener los movimientos");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		response.put("movimientos", movimientos);
+		response.put("mensaje", "movimientos obtenidos");
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
 }

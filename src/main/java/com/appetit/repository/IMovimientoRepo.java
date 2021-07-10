@@ -19,4 +19,6 @@ public interface IMovimientoRepo extends JpaRepository<MovimientoCaja, Long> {
 
 	public Page<MovimientoCaja> findByUsuarioAndFecha(Pageable pageable, Usuario usuario, Date fecha);
 
+	public Page<MovimientoCaja> findByFechaBetween(Pageable pageable, Date fecha_ini, Date fecha_fin);
+
 }

@@ -14,7 +14,7 @@ public class MedioPago implements Serializable {
 	private Long id;
 
 	private String tipoPago;
-	
+
 	private String folio;
 
 	private Boolean estado;

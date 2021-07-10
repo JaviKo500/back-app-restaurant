@@ -36,7 +36,7 @@ public class ClienteRestController {
 	private ValidacionService validacionService;
 
 	// obtener listado de clientes
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/clientes/page/{page}")
 	public ResponseEntity<?> obtenerClientesPageable(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
@@ -54,7 +54,7 @@ public class ClienteRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	// registro por parte del cliente
+	// registro por parte del cliente ACCESO LIBRE
 	@PostMapping("client/register/client")
 	public ResponseEntity<?> guardarCliente(@RequestBody Cliente cliente) {
 		Map<String, Object> response = new HashMap<>();
@@ -103,7 +103,7 @@ public class ClienteRestController {
 	}
 
 	// metodo para actualizar un cliente
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PutMapping("cliente/update/{id}")
 	public ResponseEntity<?> ActualizarClienteid(@RequestBody Cliente cliente, @PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -145,7 +145,7 @@ public class ClienteRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("cliente/findbyced/{cedula}")
 	public ResponseEntity<?> ObtenerClienteCedula(@PathVariable String cedula) {
 		Map<String, Object> response = new HashMap<>();
@@ -172,8 +172,8 @@ public class ClienteRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	// obtener cliente por cedula
-	@Secured({ "ROLE_ADMIN" })
+	// obtener cliente por id
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("cliente/find-by-id/{id}")
 	public ResponseEntity<?> ObtenerClienteId(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -195,7 +195,7 @@ public class ClienteRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@DeleteMapping("cliente/delete/{id}")
 	public ResponseEntity<?> EliminarClienteID(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +39,9 @@ public class UsuarioRestController {
 
 	@Autowired
 	private ValidacionService validacionService;
+
+	@Autowired
+	private BCryptPasswordEncoder passwordEncoder;
 
 	// lista de usuarios para el arqueo
 	@Secured("ROLE_ADMIN")
@@ -108,7 +112,7 @@ public class UsuarioRestController {
 		response.put("usuario", user);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
-	
+
 	// obtener usuario por id
 	@Secured("ROLE_ADMIN")
 	@GetMapping("get/user/movimiento/{id}")
@@ -136,7 +140,7 @@ public class UsuarioRestController {
 
 	@Secured("ROLE_ADMIN")
 	@GetMapping("get/users/{page}")
-	public ResponseEntity<?> registrarUsuario(@PathVariable Integer page) {
+	public ResponseEntity<?> listarUsuario(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
 		Page<Usuario> usuarios;
 		// paginacion de usuarios
@@ -163,8 +167,13 @@ public class UsuarioRestController {
 			response.put("mensaje", "El usuario no contiene todos los campos correctos");
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.BAD_REQUEST);
 		} else {
-			usuario.setTelefono("0" + usuario.getTelefono());
-			usuario.setCedula("0" + usuario.getCedula());
+			if (usuario.getTelefono().length() == 9) {
+				usuario.setTelefono("0" + usuario.getTelefono());
+			}
+			if (usuario.getCedula().length() == 9) {
+				usuario.setCedula("0" + usuario.getCedula());
+			}
+
 		}
 		// asignar estado true al usuario
 		if (usuario.getId() == null) {
@@ -178,7 +187,8 @@ public class UsuarioRestController {
 			response.put("mensaje", errores);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CONFLICT);
 		}
-
+		// encriptar contraseña
+		usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
 		// registrar usuario
 		try {
 			usuarioService.registrarUsuario(usuario);
@@ -237,6 +247,8 @@ public class UsuarioRestController {
 			usuActual.setUsername(usuario.getUsername());
 			usuActual.setEstado(usuario.getEstado());
 			usuActual.setSexo(usuario.getSexo());
+			// pendiente
+			usuActual.setPassword(passwordEncoder.encode(usuario.getPassword()));
 			usuarioService.registrarUsuario(usuActual);
 		} catch (DataAccessException e) {
 			response.put("mensaje", "Error al actualizar el Usuario.");

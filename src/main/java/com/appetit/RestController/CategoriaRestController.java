@@ -45,11 +45,13 @@ public class CategoriaRestController {
 	@Autowired
 	IUploadFileService fileService;
 
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/tipo-categorias")
 	public List<TipoCategoria> getTiposCategorias() {
 		return categoriaService.getAllTiposCategoria();
 	}
 
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/categories")
 	public ResponseEntity<?> GetAllCategorias() {
 		Map<String, Object> response = new HashMap<>();
@@ -71,7 +73,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	//productos clientes
+	// productos clientes
 	@GetMapping("get/categories/products")
 	public ResponseEntity<?> GetCategorias() {
 		Map<String, Object> response = new HashMap<>();
@@ -93,7 +95,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/categories/{page}")
 	public ResponseEntity<?> GetCategoriasPage(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
@@ -112,7 +114,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PostMapping("register/category")
 	public ResponseEntity<?> RegistarCategoria(@RequestBody Categoria categoria) {
 		Map<String, Object> response = new HashMap<>();
@@ -151,7 +153,7 @@ public class CategoriaRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PutMapping("update/category/{id}")
 	public ResponseEntity<?> ActualizarCategoria(@RequestBody Categoria categoria, @PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -198,7 +200,7 @@ public class CategoriaRestController {
 	}
 
 	// metodo de carga de imagenes
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PostMapping("register/category/image/upload")
 	public ResponseEntity<?> imgProducto(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id) {
 
@@ -241,6 +243,7 @@ public class CategoriaRestController {
 
 	}
 
+	// ACCESO LIBRE
 	@GetMapping("category/img/{nombreImg:.+}") // :.+ es una expresion reguar de que es un archivo
 	public ResponseEntity<Resource> GetimagenProd(@PathVariable String nombreImg) {
 

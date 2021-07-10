@@ -14,7 +14,6 @@ import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
@@ -25,6 +24,10 @@ public class MovimientoCaja implements Serializable {
 	private Long id;
 
 	private Double monto;
+
+	private Double monto_entregado;
+
+	private Double cambio_usuario;
 
 	@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 	@ManyToOne(fetch = FetchType.LAZY)
@@ -54,6 +57,22 @@ public class MovimientoCaja implements Serializable {
 
 	public void setFecha(Date fecha) {
 		this.fecha = fecha;
+	}
+
+	public Double getMonto_entregado() {
+		return monto_entregado;
+	}
+
+	public void setMonto_entregado(Double monto_entregado) {
+		this.monto_entregado = monto_entregado;
+	}
+
+	public Double getCambio_usuario() {
+		return cambio_usuario;
+	}
+
+	public void setCambio_usuario(Double cambio_usuario) {
+		this.cambio_usuario = cambio_usuario;
 	}
 
 	public Long getId() {

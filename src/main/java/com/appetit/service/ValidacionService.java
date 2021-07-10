@@ -11,6 +11,7 @@ import com.appetit.models.ArqueoCaja;
 import com.appetit.models.Caja;
 import com.appetit.models.Cliente;
 import com.appetit.models.Combo;
+import com.appetit.models.Restaurante;
 import com.appetit.models.Usuario;
 
 @Service
@@ -93,6 +94,28 @@ public class ValidacionService {
 			}
 		}
 		return errores;
+	}
+
+	public List<String> camposConfiguracion(Restaurante r) {
+		List<String> lista = new ArrayList<>();
+		if (r.getRuc() == null || r.getRuc().length() < 10 ) {
+			lista.add("La cédula o RUC debe contener almenos 10 dígitos.");
+		} else {
+			if (CamposNumericos(r.getRuc()) == false) {
+				lista.add("El RUC debe ser numérico");
+			}
+		}
+		if ( r.getTelefono() == null || r.getTelefono().length() < 7) {
+			lista.add("El teléfono debe contener almenos 7 dígitos.");
+		}
+		if (r.getCelular() == null || r.getCelular().length() < 10) {
+			lista.add("El celular debe contener almenos 10 dígitos.");
+		}
+		if (r.getNombreRestaurante() == null || CamposConEspacios(r.getNombreRestaurante()) == false) {
+			lista.add("El nombre debe contener solo caracteres alfabeticos.");
+		}
+
+		return lista;
 	}
 
 	// validacion campos usuario

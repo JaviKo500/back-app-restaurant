@@ -12,6 +12,12 @@ insert into caja(eliminated, nombre_caja, numero_caja, estado) values(false, 'ca
 insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'Bebidas', 'jar-loading.gif', false,1);
 insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'prueba', 'jar-loading.gif', false,1);
 insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'prueba cate1', 'jar-loading.gif', false,1);
+insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'carnes', 'jar-loading.gif', false,1);
+insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'desayunos', 'jar-loading.gif', false,1);
+insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'almuerzos', 'jar-loading.gif', false,1);
+insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'meriendas', 'jar-loading.gif', false,1);
+insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'mariscos', 'jar-loading.gif', false,1);
+insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'platos fuertes', 'jar-loading.gif', false,1);
 insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'prueba cate 2', 'jar-loading.gif', false,2);
 insert into categoria (estado, nombre, imagen, eliminated, tipo_id) values(true,'prueba cate 3', 'jar-loading.gif', false,2);
 
@@ -44,6 +50,7 @@ insert into mesa (estado, nombre, eliminated) values (false, 'mesa14', false);
 
 insert into role (nombre) values ('ROLE_ADMIN');
 insert into role (nombre) values ('ROLE_COCINERO');
+insert into role (nombre) values ('ROLE_MESERO');
 
 insert into usuarios_roles (usuario_id, role_id) values(1,1);
 

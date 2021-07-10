@@ -34,4 +34,9 @@ public class MovimientoService {
 	public Page<MovimientoCaja> obtenerMovimientosCajaUsuarioFecha(Pageable pageable, Usuario usuario) {
 		return movimientoRepo.findByUsuarioAndFecha(pageable, usuario, new Date());
 	}
+
+	@Transactional(readOnly = true)
+	public Page<MovimientoCaja> obtenerMovimientosEntreFechas(Date fecha_ini, Date fecha_fin, Pageable pageable) {
+		return movimientoRepo.findByFechaBetween(pageable, fecha_ini, fecha_fin);
+	}
 }

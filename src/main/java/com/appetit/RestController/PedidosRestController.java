@@ -8,6 +8,9 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -44,7 +47,7 @@ public class PedidosRestController {
 	@Autowired
 	ComboService comboService;
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/pedidos/estados")
 	public List<Estado> listarEstadosPedidos() {
 		List<Estado> estados = estadoService.obtenerListaEstados();
@@ -58,6 +61,27 @@ public class PedidosRestController {
 	}
 
 	@Secured({ "ROLE_ADMIN" })
+	@GetMapping("get/ventas/from/{fecha_ini}/to/{fecha_fin}/page/{page}")
+	public ResponseEntity<?> listarVentas(@PathVariable Integer page, @PathVariable Date fecha_ini,
+			@PathVariable Date fecha_fin) {
+		Map<String, Object> response = new HashMap<>();
+		Page<Pedido> pedidos;
+		Estado estado;
+		try {
+			estado = estadoService.buscarEstadoByNombre("Entregado");
+			Pageable pageable = PageRequest.of(page, 10);
+			pedidos = pedidoService.obtenerVentasFechasEstado(pageable, estado, fecha_ini, fecha_fin);
+		} catch (DataAccessException e) {
+			response.put("mensaje", "Error el obtener las ventas.");
+			response.put("error", e.getMostSpecificCause().getMessage());
+			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		response.put("mensaje", "lista obtenida");
+		response.put("ventas", pedidos);
+		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
+	}
+
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/pedido/auth/{id}")
 	public ResponseEntity<?> obtenerPedidoId(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -79,7 +103,7 @@ public class PedidosRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("pedidos/dia/estado/{estado_id}")
 	public ResponseEntity<?> obtenerPerdidosDiaEstado(@PathVariable Long estado_id) {
 		Map<String, Object> response = new HashMap<>();
@@ -113,7 +137,7 @@ public class PedidosRestController {
 	}
 
 //obtener pedidos donde por fecha y no sean entregados ni anilados
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO", "ROLE_COCINERO" })
 	@GetMapping("pedidos/dia/no-entregados/no-anulados")
 	public ResponseEntity<?> obtenerPedidosDiaAndNoDispoNoAnulado() {
 		Map<String, Object> response = new HashMap<>();
@@ -133,7 +157,7 @@ public class PedidosRestController {
 	}
 
 	// solo para administracion
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PostMapping("register/new/auth/pedido")
 	public ResponseEntity<?> registrarAuthPedido(@RequestBody Pedido pedido) {
 		Map<String, Object> response = new HashMap<>();
@@ -172,6 +196,7 @@ public class PedidosRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
+	// METODO PARA CLIENTES
 	@PostMapping("register/new/pedido/{cedula}")
 	public ResponseEntity<?> registrarClientePedido(@RequestBody Pedido pedido, @PathVariable String cedula) {
 		Map<String, Object> response = new HashMap<>();

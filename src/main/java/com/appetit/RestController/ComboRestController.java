@@ -42,7 +42,8 @@ public class ComboRestController {
 	@Autowired
 	CategoriaService categoriaService;
 
-	@Secured({ "ROLE_ADMIN" })
+	// filtrar combos por termino
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("combos/cargar/{term}")
 	public ResponseEntity<?> filtrarCombosByTermino(@PathVariable String term) {
 		Map<String, Object> response = new HashMap<>();
@@ -61,7 +62,7 @@ public class ComboRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO", "ROLE_COCINERO" })
 	@PutMapping("actualizar/estado/combo")
 	public ResponseEntity<?> CambiarEstadoProducto(@RequestBody Combo combo) {
 		Map<String, Object> response = new HashMap<>();
@@ -78,7 +79,7 @@ public class ComboRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO", "ROLE_COCINERO" })
 	@GetMapping("get/combo/{id}")
 	public ResponseEntity<?> GetCategorias(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -125,6 +126,7 @@ public class ComboRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	// filtrado de combo por id por lado del cliente
 	@GetMapping("get/client/combos/{id_cate}")
 	public ResponseEntity<?> obtenerCombos(@PathVariable Long id_cate) {
 		Map<String, Object> response = new HashMap<>();
@@ -145,7 +147,7 @@ public class ComboRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO", "ROLE_COCINERO" })
 	@GetMapping("get/combos-disponibles/{page}")
 	public ResponseEntity<?> obtenerCombos(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
@@ -165,7 +167,7 @@ public class ComboRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO", "ROLE_COCINERO" })
 	@PostMapping("registrar/combo")
 	public ResponseEntity<?> registrarCombo(@RequestBody Combo combo) {
 		Map<String, Object> response = new HashMap<>();

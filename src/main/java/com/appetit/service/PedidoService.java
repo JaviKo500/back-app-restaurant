@@ -44,4 +44,14 @@ public class PedidoService {
 		return pedidoRepo.save(pedido);
 	}
 
+	@Transactional(readOnly = true)
+	public Page<Pedido> obtenerVentas(Pageable pageable) {
+		return pedidoRepo.seleccionar(pageable);
+	}
+
+	@Transactional(readOnly = true)
+	public Page<Pedido> obtenerVentasFechasEstado(Pageable pageable, Estado estado, Date fechaIni, Date fechaFin) {
+		return pedidoRepo.findByFechaBetweenAndEstado(pageable, fechaIni, fechaFin, estado);
+	}
+
 }

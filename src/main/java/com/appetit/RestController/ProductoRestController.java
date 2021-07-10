@@ -55,7 +55,7 @@ public class ProductoRestController {
 	@Autowired
 	ComboService comboService;
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO", "ROLE_COCINERO" })
 	@PutMapping("actualizar/estado/producto")
 	public ResponseEntity<?> CambiarEstadoProducto(@RequestBody Producto producto) {
 		Map<String, Object> response = new HashMap<>();
@@ -72,7 +72,8 @@ public class ProductoRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	// FILTRADO DE PRODUCTOS POR TERMINO
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("productos/cargar/{term}")
 	public ResponseEntity<?> filtrarProductosByTermino(@PathVariable String term) {
 		Map<String, Object> response = new HashMap<>();
@@ -91,6 +92,7 @@ public class ProductoRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
+	// CARGA DE PRODUCTOS POR EL CLIENTE
 	@GetMapping("get/client/products/{cate_id}")
 	public ResponseEntity<?> ListaDeProductos(@PathVariable Long cate_id) {
 		Map<String, Object> response = new HashMap<>();
@@ -110,7 +112,7 @@ public class ProductoRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/product/{id}")
 	public ResponseEntity<?> ProductoByid(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -134,7 +136,7 @@ public class ProductoRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@GetMapping("get/products/{page}")
 	public ResponseEntity<?> ListaDeProductosPage(@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
@@ -154,7 +156,7 @@ public class ProductoRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PostMapping("register/product")
 	public ResponseEntity<?> RegistrarProducto(@RequestBody Producto producto) {
 		Map<String, Object> response = new HashMap<>();
@@ -179,7 +181,7 @@ public class ProductoRestController {
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CREATED);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PutMapping("update/product/{id}")
 	public ResponseEntity<?> ActualizarProducto(@RequestBody Producto producto, @PathVariable long id) {
 		Map<String, Object> response = new HashMap<>();
@@ -212,7 +214,7 @@ public class ProductoRestController {
 	}
 
 	// carga de imagenes
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@PostMapping("register/product/img/upload")
 	public ResponseEntity<?> imgProducto(@RequestParam("archivo") MultipartFile archivo, @RequestParam("id") Long id,
 			@RequestParam("tipo") String tipo) {
@@ -285,6 +287,7 @@ public class ProductoRestController {
 
 	}
 
+	// MAPEO DE IMAGENES ACCESO LIBRE
 	@GetMapping("product/img/{nombreImg:.+}") // :.+ es una expresion reguar de que es un archivo
 	public ResponseEntity<Resource> GetimagenProd(@PathVariable String nombreImg) {
 
@@ -302,7 +305,7 @@ public class ProductoRestController {
 		return new ResponseEntity<Resource>(recurso, cabecera, HttpStatus.OK);
 	}
 
-	@Secured({ "ROLE_ADMIN" })
+	@Secured({ "ROLE_ADMIN", "ROLE_CAJERO" })
 	@DeleteMapping("delete/product/{id}")
 	public ResponseEntity<?> deleteproducto(@PathVariable Long id) {
 		Map<String, Object> response = new HashMap<>();

@@ -35,12 +35,14 @@ public class ArqueoRestCotroller {
 	@Autowired
 	ValidacionService validacion;
 
-	@Secured({"ROLE_ADMIN"})
+	@Secured({ "ROLE_ADMIN" })
 	@GetMapping("get/arqueos-caja/from/{desde}/to/{hasta}/page/{page}")
 	public ResponseEntity<?> listarArqueosEntreFechas(@PathVariable Date desde, @PathVariable Date hasta,
 			@PathVariable Integer page) {
 		Map<String, Object> response = new HashMap<>();
 		Page<ArqueoCaja> arqueos;
+		System.out.println("desde: " + desde);
+		System.out.println("hasta: " + hasta);
 		try {
 			Pageable pageable = PageRequest.of(page, 10);
 			arqueos = arqueoService.ArqueosEntreFechas(pageable, desde, hasta);
@@ -53,7 +55,8 @@ public class ArqueoRestCotroller {
 		response.put("arqueos", arqueos);
 		return new ResponseEntity<Map<String, Object>>(response, HttpStatus.OK);
 	}
-	@Secured({"ROLE_ADMIN"})
+
+	@Secured({ "ROLE_ADMIN" })
 	@PostMapping("register/new/arqueo-caja")
 	public ResponseEntity<?> registrarNuevoArqueo(@RequestBody ArqueoCaja arqueo) {
 		Map<String, Object> response = new HashMap<>();
@@ -64,7 +67,7 @@ public class ArqueoRestCotroller {
 			response.put("errores", errores);
 			return new ResponseEntity<Map<String, Object>>(response, HttpStatus.CONFLICT);
 		}
-		 
+
 		// validar si existe un arqueo abierto
 		if (arqueo.getCaja().getEstado() == false) {
 			response.put("mensaje", "Error de apertura de caja.");
@@ -101,7 +104,7 @@ public class ArqueoRestCotroller {
 	}
 
 	// cerrar una caja
-	@Secured({"ROLE_ADMIN"})
+	@Secured({ "ROLE_ADMIN" })
 	@PutMapping("cerrar/arqueo")
 	public ResponseEntity<?> CerrarCaja(@RequestBody ArqueoCaja arqueo) {
 		Map<String, Object> response = new HashMap<>();
